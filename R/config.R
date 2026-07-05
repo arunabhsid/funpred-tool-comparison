@@ -174,8 +174,8 @@ spearman_with_p <- function(x, y, min_obs = 10) {
 to_clean_matrix <- function(M) {
   M2 <- matrix(as.numeric(M), nrow = nrow(M), ncol = ncol(M),
                dimnames = dimnames(M))
-  sds <- apply(M2, 2, sd, na.rm = TRUE)
-  M2[, sds > 0, drop = FALSE]
+  sds <- apply(M2, 2, sd, na.rm = TRUE) # standard deviation of each column
+  M2[, sds > 0, drop = FALSE] # keep only columns whose sd > 0
 }
 
 ############
