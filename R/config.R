@@ -138,6 +138,19 @@ cat("Run PICRUSt2 from the terminal, not R.\n",
     "  conda activate picrust2\n",
     "Then run the prediction from the terminal (script 02 prints the command).\n")
 
+###################
+# Plot colours 
+###################
+
+# prediction methods 
+tool_colors <- c(PICRUSt2 = "#0072B2", Tax4Fun2 = "#D55E00", Shotgun = "#CC79A7")
+
+# MIMOSA MGM classes 
+mgm_colors <- c("Both MGM"          = "#009E73",   # green
+                "PICRUSt2-only MGM" = "#0072B2",   # same blue as PICRUSt2
+                "Tax4Fun2-only MGM" = "#D55E00",   # same orange as Tax4Fun2
+                "Neither"           = "#999999")   # grey
+
 
 ###################
 # Helper functions 
