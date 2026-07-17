@@ -123,12 +123,11 @@ for (p in c("biomformat", "KEGGREST")) {
   if (!requireNamespace(p, quietly = TRUE)) BiocManager::install(p)
 }
 
-# Tax4Fun2 (v1.1.5, the version from Wemheuer et al. 2020) can be 
-# installed fromsource. I could not find the original repo; See:
-# github.com/fjossandon/Tax4Fun2 for instructions to install
-# wget https://github.com/bwemheu/Tax4Fun2/releases/download/1.1.5/Tax4Fun2_1.1.5.tar.gz
+# Tax4Fun2 (v1.1.5, the version from Wemheuer et al. 2020). The original repo is
+# gone, so we install the maintained fork (github.com/fjossandon/Tax4Fun2)
 if (!requireNamespace("Tax4Fun2", quietly = TRUE)) {
-  install.packages("path/to/Tax4Fun2_1.1.5.tar.gz", repos = NULL, type = "source")
+  if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes")
+  remotes::install_github("fjossandon/Tax4Fun2")
 }
 
 # PICRUSt2 installation instructions
@@ -189,6 +188,28 @@ to_clean_matrix <- function(M) {
                dimnames = dimnames(M))
   sds <- apply(M2, 2, sd, na.rm = TRUE) # standard deviation of each column
   M2[, sds > 0, drop = FALSE] # keep only columns whose sd > 0
+}
+
+# Calculate max absolut rho
+# For one metabolite, find the strongest |Spearman correlation| with any KO in
+# ko_matrix. A KO is skipped if fewer than 10 samples have a value for both.
+# Returns NA if nothing could be tested. Used by the maximum KO-metabolite
+# correlation analysis, for both the 16S predictions and the shotgun data.
+max_abs_rho <- function(metabolite, ko_matrix) {
+  rhos <- numeric(ncol(ko_matrix))              # one correlation per KO
+
+  for (j in seq_len(ncol(ko_matrix))) {
+    ko <- ko_matrix[, j]                        # this KO's values across samples
+    ok <- is.finite(metabolite) & is.finite(ko) # samples where both have a value
+
+    if (sum(ok) < 10) {
+      rhos[j] <- NA_real_                       # too few samples 
+    } else {
+      rhos[j] <- abs(cor(metabolite[ok], ko[ok], method = "spearman"))
+    }
+  }
+
+  if (all(is.na(rhos))) NA_real_ else max(rhos, na.rm = TRUE)  # a vector to one number per metabolite
 }
 
 ############
