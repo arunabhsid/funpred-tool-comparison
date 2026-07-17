@@ -16,27 +16,6 @@ library(ggplot2)
 if (!exists("all_data")) 
 stop("Run config.R and 02_load_and_harmonize.R first (all_data not found).")
 
-
-# helper function
-# For one metabolite (y), find the strongest |Spearman correlation| with any KO
-# in ko_mat
-
-max_abs_rho <- function(y, ko_mat) {
-  rhos <- numeric(ncol(ko_mat))                 # one correlation per KO
-
-  for (j in seq_len(ncol(ko_mat))) {
-    x  <- ko_mat[, j]                            # this KO's values across samples
-    ok <- is.finite(y) & is.finite(x)           
-    if (sum(ok) < 10) {
-      rhos[j] <- NA_real_                        
-    } else {
-      rhos[j] <- abs(cor(y[ok], x[ok], method = "spearman"))
-    }
-  }
-
-  if (all(is.na(rhos))) NA_real_ else max(rhos, na.rm = TRUE) # a vector to one number per metabolite
-}
-
 ###############################
 # run analysis for each dataset
 ###############################
