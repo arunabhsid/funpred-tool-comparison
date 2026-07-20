@@ -49,8 +49,7 @@ if (file.exists(he$mtb_fp) && file.exists(he$biom_fp) && file.exists(he$fasta_fp
   fwrite(mtb_12, file.path(out_dir, "mtb.tsv"), sep = "\t")
 
   # 3. compound map: just copy it across (nothing to filter)
-  #    the raw file is named mtb_map.tsv. we save it as mtb.map.tsv
-  file.copy(file.path(raw_dir, "mtb_map.tsv"),
+  file.copy(file.path(raw_dir, "mtb.map.tsv"),
             file.path(out_dir, "mtb.map.tsv"), overwrite = TRUE)
 
   # 4. BIOM (ASV counts): keep those samples, then drop ASVs that are now empty
