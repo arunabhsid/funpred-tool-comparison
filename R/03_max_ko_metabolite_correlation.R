@@ -79,7 +79,7 @@ for (ds_name in names(all_data)) {
 ###################
 
 cat("\n=== Figures ===\n")
-dir.create("../plots", showWarnings = FALSE)   # make the plots folder if it isn't there
+dir.create("plots", showWarnings = FALSE)   # make the plots folder if it isn't there
 
 # Create one combined table (per-dataset tables into one)
 
@@ -105,10 +105,10 @@ fig1 <- ggplot(maxcorr_long, aes(x = Method, y = rho, fill = Method)) +
   theme(legend.position = "none", strip.text = element_text(face = "bold"))
 
 # MANUSCRIPT Figure 1
-jpeg("../plots/max_correlation_boxplot.jpg", height = 5, width = 8, units = "in", res = 600)
+jpeg("plots/fig1_max_correlation_boxplot.jpg", height = 8, width = 8, units = "in", res = 600)
 print(fig1)
 dev.off()
-cat("  saved: ../plots/max_correlation_boxplot.jpg\n")
+cat("  saved: plots/fig1_max_correlation_boxplot.jpg\n")
 
 # Figure 2: how often each tool wins, one panel per dataset
 wins <- maxcorr_all[maxcorr_all$winner != "Tie" & !is.na(maxcorr_all$winner), ]
@@ -126,9 +126,9 @@ fig2 <- ggplot(win_counts, aes(x = winner, y = N, fill = winner)) +
   theme(legend.position = "none", strip.text = element_text(face = "bold"))
 
 # MANUSCRIPT Figure 2
-jpeg("../plots/max_correlation_winners.jpg", height = 5, width = 8, units = "in", res = 600)
+jpeg("plots/fig2_max_correlation_winners.jpg", height = 8, width = 8, units = "in", res = 600)
 print(fig2)
 dev.off()
-cat("  saved: ../plots/max_correlation_winners.jpg\n")
+cat("  saved: plots/fig2_max_correlation_winners.jpg\n")
 
 cat("\n=== Done. Proceed to script 04 ===\n")
