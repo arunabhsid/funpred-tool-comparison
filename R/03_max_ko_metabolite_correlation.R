@@ -13,8 +13,9 @@ library(data.table)
 library(ggplot2)
 
 # config.R and 02_load_and_harmonize.R must have been run first
-if (!exists("all_data")) 
-stop("Run config.R and 02_load_and_harmonize.R first (all_data not found).")
+if (!exists("all_data")) {
+  stop("Run config.R and 02_load_and_harmonize.R first (all_data not found).")
+}
 
 ###############################
 # run analysis for each dataset
