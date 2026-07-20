@@ -1,0 +1,10 @@
+*
+!.gitignore
+!README.md
+!*/
+!*.R
+
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
