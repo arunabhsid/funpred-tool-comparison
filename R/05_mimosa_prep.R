@@ -2,18 +2,18 @@
 # 05_mimosa_prep.R  -  prepare inputs for MIMOSA2
 ##############################################################
 #
-# MIMOSA2 builds a mechanistic metabolic model: We run it through the free web app
-# the free web app (https://borenstein-lab.github.io/MIMOSA2shiny/)
+# We run MIMOSA2 through the free web app:
+# (https://borenstein-lab.github.io/MIMOSA2shiny/)
 # This script only formats and saves the input files, then prints the manual
 # upload steps. 
 ##############################################################
 
 # config.R and 02_load_and_harmonize.R must have been run first
-if (!exists("all_data")) 
-stop("Run config.R and 02_load_and_harmonize.R first (all_data not found).")
+if (!exists("all_data")) {
+  stop("Run config.R and 02_load_and_harmonize.R first (all_data not found).")
+}
 
 library(data.table)
-
 
 for (dataset_name in names(all_data)) {
 
