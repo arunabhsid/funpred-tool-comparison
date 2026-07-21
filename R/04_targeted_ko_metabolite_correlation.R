@@ -12,8 +12,9 @@
 ##############################################################
 
 # config.R and 02_load_and_harmonize.R must have been run first
-if (!exists("all_data")) 
-stop("Run config.R and 02_load_and_harmonize.R first (all_data not found).")
+if (!exists("all_data")) {
+  stop("Run config.R and 02_load_and_harmonize.R first (all_data not found).")
+  }
 
 library(data.table)
 library(KEGGREST)
@@ -188,17 +189,17 @@ for (dataset_name in names(all_data)) {
 ##############################################
 # Figures
 ##############################################
+
 cat("=== Figures ===\n")
-dir.create("../plots", showWarnings = FALSE)
+dir.create("plots/final", recursive = TRUE, showWarnings = FALSE)
 
 targeted_all <- rbindlist(targeted_results)
 
-# Figure 3A: signed rho, PICRUSt2 vs Tax4Fun2, one panel per dataset 
+# Figure 2A: signed rho, PICRUSt2 vs Tax4Fun2
 scatter_dat <- targeted_all[is.finite(targeted_all$rho_pic) & is.finite(targeted_all$rho_t4f), ]
 scatter_dat$higher <- ifelse(abs(scatter_dat$rho_t4f) > abs(scatter_dat$rho_pic),
                              "Tax4Fun2 higher", "PICRUSt2 higher")
-
-fig3a <- ggplot(scatter_dat, aes(x = rho_pic, y = rho_t4f, colour = higher)) +
+fig2a <- ggplot(scatter_dat, aes(x = rho_pic, y = rho_t4f, colour = higher)) +
   geom_abline(slope = 1, intercept = 0, linetype = "dashed", colour = "grey50") +
   geom_point(alpha = 0.6, size = 2) +
   facet_wrap(~ Dataset) +
@@ -208,27 +209,35 @@ fig3a <- ggplot(scatter_dat, aes(x = rho_pic, y = rho_t4f, colour = higher)) +
   theme_bw(base_size = 12) +
   theme(strip.text = element_text(face = "bold"))
 
-# Figure 3B: how often each tool wins, one panel per dataset
-win_counts <- as.data.frame(table(Dataset = targeted_all$Dataset, winner = targeted_all$winner))
+# Figure 2B: how often each tool wins
+wins <- targeted_all[targeted_all$winner != "Tie" & !is.na(targeted_all$winner), ]
+win_counts <- as.data.frame(table(Dataset = wins$Dataset, winner = wins$winner))
 names(win_counts)[names(win_counts) == "Freq"] <- "N"
 win_counts <- win_counts[win_counts$N > 0, ]
+win_counts$signed_N   <- ifelse(win_counts$winner == "PICRUSt2", -win_counts$N, win_counts$N)
+win_counts$label_side <- ifelse(win_counts$signed_N < 0, 1.2, -0.2)   # push labels outside the bars
 
-fig3b <- ggplot(win_counts, aes(x = winner, y = N, fill = winner)) +
-  geom_col(width = 0.6) +
-  geom_text(aes(label = N), vjust = -0.3, size = 3.5) +
-  facet_wrap(~ Dataset) +
-  scale_fill_manual(values = c(tool_colors, Tie = "#999999")) +
-  labs(y = "Number of metabolites", x = NULL) +
-  theme_bw(base_size = 12) +
-  theme(legend.position = "none", strip.text = element_text(face = "bold"))
+# rev factor matching the scatter facet order
+win_counts$Dataset <- factor(win_counts$Dataset, levels = rev(levels(factor(win_counts$Dataset))))
 
-# combine both figures into one two-panel Figure 3 (A = scatter, B = winners)
-fig3 <- cowplot::plot_grid(fig3a, fig3b, labels = c("A", "B"), ncol = 1)
+fig2b <- ggplot(win_counts, aes(x = signed_N, y = Dataset, fill = winner)) +
+  geom_col(width = 0.55) +
+  geom_vline(xintercept = 0, colour = "grey40", linewidth = 0.3) +
+  geom_text(aes(label = N, hjust = label_side), size = 2.6) +
+  scale_fill_manual(values = tool_colors) +
+  scale_x_continuous(labels = abs, expand = expansion(mult = 0.18)) +
+  labs(x = "Number of metabolites", y = NULL, fill = NULL) +
+  theme_bw(base_size = 10) +
+  theme(legend.position = "none", axis.text.y = element_text(size = 8),
+        panel.grid.major.y = element_blank())
 
-# MANUSCRIPT Figure 3
-jpeg("../plots/targeted_correlation.jpg", height = 11, width = 9, units = "in", res = 600)
-print(fig3)
+# combine both into one two-panel Figure 2 (A = scatter, B = win-count strip)
+fig2 <- cowplot::plot_grid(fig2a, fig2b, labels = c("A", "B"), ncol = 1, rel_heights = c(4.5, 1))
+
+# MANUSCRIPT Figure 2
+jpeg("plots/final/fig2_targeted_correlation.jpg", height = 8, width = 9, units = "in", res = 600)
+print(fig2)
 dev.off()
-cat("  saved: ../plots/targeted_correlation.jpg\n")
+cat("  saved: plots/final/fig2_targeted_correlation.jpg\n")
 
 cat("\n=== Done. Proceed to script 05 (MIMOSA prep). ===\n")

@@ -73,20 +73,17 @@ for (ds_name in names(all_data)) {
   cat("  done:", ds_name, "\n")
 }
 
-
 ###################
 # Figures (all datasets together)
 ###################
 
 cat("\n=== Figures ===\n")
-dir.create("plots", showWarnings = FALSE)   # make the plots folder if it isn't there
+dir.create("plots/final", recursive = TRUE, showWarnings = FALSE)
 
 # Create one combined table (per-dataset tables into one)
-
 maxcorr_all <- rbindlist(maxcorr_results)
 
-# build the long table by hand: one block per tool, then stack them.
-# doing it this way puts the clean labels "PICRUSt2"/"Tax4Fun2" straight into Method.
+# build the long table: one block per tool, then stack them
 pic <- data.frame(Dataset = maxcorr_all$Dataset, KEGG = maxcorr_all$KEGG,
                   Method = "PICRUSt2", rho = maxcorr_all$max_rho_picrust2)
 t4f <- data.frame(Dataset = maxcorr_all$Dataset, KEGG = maxcorr_all$KEGG,
@@ -94,8 +91,8 @@ t4f <- data.frame(Dataset = maxcorr_all$Dataset, KEGG = maxcorr_all$KEGG,
 maxcorr_long <- rbind(pic, t4f)
 maxcorr_long <- maxcorr_long[is.finite(maxcorr_long$rho), ]
 
-# Figure 1: max |rho| by tool, one panel per dataset
-fig1 <- ggplot(maxcorr_long, aes(x = Method, y = rho, fill = Method)) +
+# Figure 1A: max |rho| by tool
+fig1a <- ggplot(maxcorr_long, aes(x = Method, y = rho, fill = Method)) +
   geom_boxplot(width = 0.5, outlier.shape = NA, alpha = 0.85) +
   geom_jitter(width = 0.15, size = 0.8, alpha = 0.25) +
   facet_wrap(~ Dataset, scales = "free_y") +
@@ -104,31 +101,34 @@ fig1 <- ggplot(maxcorr_long, aes(x = Method, y = rho, fill = Method)) +
   theme_bw(base_size = 12) +
   theme(legend.position = "none", strip.text = element_text(face = "bold"))
 
-# MANUSCRIPT Figure 1
-jpeg("plots/fig1_max_correlation_boxplot.jpg", height = 8, width = 8, units = "in", res = 600)
-print(fig1)
-dev.off()
-cat("  saved: plots/fig1_max_correlation_boxplot.jpg\n")
-
-# Figure 2: how often each tool wins, one panel per dataset
+# Figure 1B: how often each tool wins (PICRUSt2 left, Tax4Fun2 right)
 wins <- maxcorr_all[maxcorr_all$winner != "Tie" & !is.na(maxcorr_all$winner), ]
 win_counts <- as.data.frame(table(Dataset = wins$Dataset, winner = wins$winner))
 names(win_counts)[names(win_counts) == "Freq"] <- "N"
 win_counts <- win_counts[win_counts$N > 0, ]
+win_counts$signed_N   <- ifelse(win_counts$winner == "PICRUSt2", -win_counts$N, win_counts$N)
+win_counts$label_side <- ifelse(win_counts$signed_N < 0, 1.2, -0.2)   # push labels outside the bars
 
-fig2 <- ggplot(win_counts, aes(x = winner, y = N, fill = winner)) +
-  geom_col(width = 0.6) +
-  geom_text(aes(label = N), vjust = -0.3, size = 3.5) +
-  facet_wrap(~ Dataset) +
+# rev factor matching the boxplot facet order
+win_counts$Dataset <- factor(win_counts$Dataset, levels = rev(levels(factor(win_counts$Dataset))))
+
+fig1b <- ggplot(win_counts, aes(x = signed_N, y = Dataset, fill = winner)) +
+  geom_col(width = 0.55) +
+  geom_vline(xintercept = 0, colour = "grey40", linewidth = 0.3) +
+  geom_text(aes(label = N, hjust = label_side), size = 2.6) +
   scale_fill_manual(values = tool_colors) +
-  labs(y = "Number of metabolites", x = NULL) +
-  theme_bw(base_size = 12) +
-  theme(legend.position = "none", strip.text = element_text(face = "bold"))
+  scale_x_continuous(labels = abs, expand = expansion(mult = 0.18)) +
+  labs(x = "Number of metabolites", y = NULL, fill = NULL) +
+  theme_bw(base_size = 10) +
+  theme(legend.position = "none", axis.text.y = element_text(size = 8),
+        panel.grid.major.y = element_blank())
+# combine
+fig1 <- cowplot::plot_grid(fig1a, fig1b, labels = c("A", "B"), ncol = 1, rel_heights = c(4.5, 1))
 
-# MANUSCRIPT Figure 2
-jpeg("plots/fig2_max_correlation_winners.jpg", height = 8, width = 8, units = "in", res = 600)
-print(fig2)
+# MANUSCRIPT Figure 1
+jpeg("plots/final/fig1_max_correlation.jpg", height = 7, width = 8, units = "in", res = 600)
+print(fig1)
 dev.off()
-cat("  saved: plots/fig2_max_correlation_winners.jpg\n")
+cat("  saved: plots/final/fig1_max_correlation.jpg\n")
 
 cat("\n=== Done. Proceed to script 04 ===\n")
