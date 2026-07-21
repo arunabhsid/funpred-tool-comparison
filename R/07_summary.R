@@ -9,8 +9,9 @@
 ##############################################################
 
 # config.R and 02_load_and_harmonize.R must have been run first
-if (!exists("all_data")) 
-stop("Run config.R and 02_load_and_harmonize.R first (all_data not found).")
+if (!exists("all_data")) {
+  stop("Run config.R and 02_load_and_harmonize.R first (all_data not found).")
+}
 
 library(data.table)
 
@@ -80,8 +81,8 @@ for (dataset_name in names(all_data)) {
 }
 
 summary_table <- do.call(rbind, summary_rows)
-fwrite(summary_table, "summary_table_all_datasets.tsv", sep = "\t")
-cat("saved: summary_table_all_datasets.tsv\n\n")
+fwrite(summary_table, "results/Summary_table_all_datasets.tsv", sep = "\t")
+cat("saved: results/Summary_table_all_datasets.tsv\n\n")
 print(summary_table)
 
-cat("\n*** Summary complete. Manuscript figures are in ../plots/. ***\n")
+cat("\n*** Summary complete. Manuscript figures are in plots/final/. ***\n")

@@ -8,8 +8,9 @@
 ##############################################################
 
 # config.R and 02_load_and_harmonize.R must have been run first
-if (!exists("all_data")) 
-stop("Run config.R and 02_load_and_harmonize.R first (all_data not found).")
+if (!exists("all_data")) {
+  stop("Run config.R and 02_load_and_harmonize.R first (all_data not found).")
+}
 
 # libraries
 library(data.table)
@@ -103,40 +104,40 @@ for (dataset_name in names(all_data)) {
 ##############################################
 # Figures + Supplementary Table S1
 ##############################################
-
 if (length(mimosa_results) > 0) {
-
+  
   cat("\n=== Figures ===\n")
-
-  dir.create("../plots", showWarnings = FALSE)
-
+  
+  dir.create("plots/final", recursive = TRUE, showWarnings = FALSE)
   mimosa_all <- do.call(rbind, mimosa_results)
+  
   # fix the category order for the legend 
   mimosa_all$mgm_cat <- factor(mimosa_all$mgm_cat, levels = names(mgm_colors))
-
-  # Figure 4: proportion of metabolites in each MGM category, per dataset
+  
+  # Figure 3: proportion of metabolites in each MGM category, per dataset (horizontal)
   mgm_counts <- as.data.frame(table(Dataset = mimosa_all$Dataset, mgm_cat = mimosa_all$mgm_cat))
   names(mgm_counts)[names(mgm_counts) == "Freq"] <- "n"
   totals <- tapply(mgm_counts$n, mgm_counts$Dataset, sum)
   mgm_counts$pct <- mgm_counts$n / totals[as.character(mgm_counts$Dataset)]
-
-  fig4 <- ggplot(mgm_counts, aes(x = Dataset, y = pct, fill = mgm_cat)) +
+  # datasets top-down, matching the other figures
+  mgm_counts$Dataset <- factor(mgm_counts$Dataset, levels = rev(levels(factor(mgm_counts$Dataset))))
+  fig3 <- ggplot(mgm_counts, aes(x = pct, y = Dataset, fill = mgm_cat)) +
     geom_col(width = 0.6) +
-    scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+    scale_x_continuous(labels = scales::percent_format(accuracy = 1),
+                       expand = expansion(mult = c(0, 0.02))) +
     scale_fill_manual(values = mgm_colors, name = NULL) +
-    labs(x = NULL, y = "Proportion of metabolites") +
+    labs(x = "Proportion of metabolites", y = NULL) +
     theme_bw(base_size = 12) +
-    theme(legend.position = "right")
-
-  # MANUSCRIPT Figure 4
-  jpeg("../plots/mimosa_mgm_proportions.jpg", height = 5, width = 8, units = "in", res = 600)
-  print(fig4)
+    theme(legend.position = "bottom")
+  
+  # MANUSCRIPT Figure 3
+  jpeg("plots/final/fig3_mimosa_mgm_proportions.jpg", height = 3, width = 8, units = "in", res = 600)
+  print(fig3)
   dev.off()
-
-  cat("  saved: ../plots/mimosa_mgm_proportions.jpg\n")
-
-  # Figure 5: MIMOSA2 model fit (R2) for PICRUSt2 vs Tax4Fun2 per dataset
-  fig5 <- ggplot(mimosa_all, aes(x = r2_pic, y = r2_t4f, colour = mgm_cat)) +
+  cat("  saved: plots/final/fig3_mimosa_mgm_proportions.jpg\n")
+  
+  # Figure 4: MIMOSA2 model fit (R2) for PICRUSt2 vs Tax4Fun2 per dataset
+  fig4 <- ggplot(mimosa_all, aes(x = r2_pic, y = r2_t4f, colour = mgm_cat)) +
     geom_abline(slope = 1, intercept = 0, linetype = 2, colour = "grey60") +
     geom_point(alpha = 0.6, size = 2) +
     scale_colour_manual(values = mgm_colors, name = NULL) +
@@ -145,14 +146,13 @@ if (length(mimosa_results) > 0) {
     labs(x = expression(R^2 * " (PICRUSt2)"), y = expression(R^2 * " (Tax4Fun2)")) +
     theme_bw(base_size = 12) +
     theme(strip.text = element_text(face = "bold"))
-
-  # MANUSCRIPT Figure 5
-  jpeg("../plots/mimosa_r2_scatter.jpg", height = 6, width = 9, units = "in", res = 600)
-  print(fig5)
+  
+  # MANUSCRIPT Figure 4
+  jpeg("plots/final/fig4_mimosa_r2_scatter.jpg", height = 6, width = 9, units = "in", res = 600)
+  print(fig4)
   dev.off()
-
-  cat("  saved: ../plots/mimosa_r2_scatter.jpg\n")
-
+  cat("  saved: plots/final/fig4_mimosa_r2_scatter.jpg\n")
+  
   # Supplementary Table S1: the full MGM list across datasets
   mgm_all <- mimosa_all[mimosa_all$mgm_cat != "Neither", ]
   mgm_all$mgm_cat <- factor(mgm_all$mgm_cat,
@@ -168,7 +168,9 @@ if (length(mimosa_results) > 0) {
     q_Tax4Fun2    = signif(mgm_all$q_t4f, 3)
   )
   # MANUSCRIPT Supplementary Table S1
-  fwrite(supp_table_s1, "supplementary_table_s1_mgm_list.csv")
-  cat("  saved: supplementary_table_s1_mgm_list.csv\n")
+  fwrite(supp_table_s1, "results/Supplementary_table_s1_mgm_list.csv")
+  cat("  saved: results/Supplementary_table_s1_mgm_list.csv\n")
 }
 cat("\n*** Done. Proceed to script 07 (summary/combine). ***\n")
+
+
