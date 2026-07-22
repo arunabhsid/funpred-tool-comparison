@@ -240,4 +240,11 @@ print(fig2)
 dev.off()
 cat("  saved: plots/final/fig2_targeted_correlation.jpg\n")
 
+# Summary for manuscript
+for (nm in names(targeted_results)) {
+  r <- targeted_results[[nm]]
+  cat(nm, "| PIC:", round(median(abs(r$rho_pic), na.rm = TRUE), 3),
+      "| T4F:", round(median(abs(r$rho_t4f), na.rm = TRUE), 3), "\n")
+}
+
 cat("\n=== Done. Proceed to script 05 (MIMOSA prep). ===\n")
