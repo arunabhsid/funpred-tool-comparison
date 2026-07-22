@@ -162,8 +162,9 @@ cat("  done\n\n")
 
 cat("=== 6: targeted KO-metabolite correlation ===\n")
 
-if (!file.exists(kegg_mapping_fp)) 
-stop("KEGG mapping not found: ", kegg_mapping_fp, " (build it in script 04).")
+if (!file.exists(kegg_mapping_fp)) {
+  stop("KEGG mapping not found: ", kegg_mapping_fp, " (build it in script 04).")
+  }
 
 # expand the mapping to one Compound-KO pair per row (same as script 04)
 map_wide <- fread(kegg_mapping_fp)
@@ -228,7 +229,7 @@ if (length(testable) > 0) {
 ###################
 
 cat("=== 7: shotgun vs 16S ===\n")
-dir.create("../plots", showWarnings = FALSE)
+dir.create("plots/final", showWarnings = FALSE)
 
 ### maximum KO-metabolite correlation -> Supplementary Figure S1 
 max_files <- list.files("results", pattern = "max_ko_metabolite_correlation.tsv",
@@ -261,10 +262,10 @@ if (length(max_files) > 0) {
           axis.text.x = element_text(angle = 30, hjust = 1))
 
   # MANUSCRIPT Supplementary Figure S1
-  jpeg("../plots/shotgun_vs_16s_max_correlation.jpg", height = 6, width = 11, units = "in", res = 600)
+  jpeg("plots/final/figS1_shotgun_vs_16s_max_correlation.jpg", height = 6, width = 11, units = "in", res = 600)
   print(fig_max)
   dev.off()
-  cat("  saved: ../plots/shotgun_vs_16s_max_correlation.jpg\n")
+  cat("  saved: plots/final/figS1_shotgun_vs_16s_max_correlation.jpg\n")
 } else {
   cat("  no 16S maximum-correlation results found - run the 16S pipeline first\n")
 }
@@ -299,10 +300,10 @@ if (length(targeted_files) > 0 && !is.null(targeted_shotgun)) {
           axis.text.x = element_text(angle = 30, hjust = 1))
 
   # MANUSCRIPT Supplementary Figure S2
-  jpeg("../plots/shotgun_vs_16s_targeted.jpg", height = 6, width = 11, units = "in", res = 600)
+  jpeg("plots/final/figS2_shotgun_vs_16s_targeted.jpg", height = 6, width = 11, units = "in", res = 600)
   print(fig_targeted)
   dev.off()
-  cat("  saved: ../plots/shotgun_vs_16s_targeted.jpg\n")
+  cat("  saved: plots/final/figS2_shotgun_vs_16s_targeted.jpg\n")
 } else {
   cat("  no 16S targeted results (or no shotgun targeted) - skipping Supplementary Figure S2\n")
 }
